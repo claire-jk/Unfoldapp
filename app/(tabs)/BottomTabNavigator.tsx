@@ -4,6 +4,9 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import BreathingScreen from './BreathingScreen';
 import HomeScreen from './HomeScreen';
+import LoginScreen from './LoginScreen';
+import ProfileScreen from './ProfileScreen';
+import RegisterScreen from './RegisterScreen';
 
 const Placeholder = ({ name }: { name: string }) => (
   <View style={styles.screen}>
@@ -56,7 +59,7 @@ export default function BottomTabNavigator() {
       <Tab.Screen name="Search" component={() => <Placeholder name="Search" />} />
       <Tab.Screen name="Post" component={() => <Placeholder name="Post" />} />
       <Tab.Screen name="Alert" component={() => <Placeholder name="Alert" />} />
-      <Tab.Screen name="Profile" component={() => <Placeholder name="Profile" />} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
 
       {/* 隱藏的呼吸頁面：徹底移除佔位 */}
       <Tab.Screen 
@@ -66,6 +69,24 @@ export default function BottomTabNavigator() {
           tabBarButton: () => null,            // 1. 不渲染按鈕元件
           tabBarItemStyle: { display: 'none' }, // 2. 徹底從 Flex 佈局移除，解決右側空白
           tabBarStyle: { display: 'none' },     // 3. 進入呼吸練習時隱藏底部選單
+        }} 
+      />
+      <Tab.Screen 
+        name="Login" 
+        component={LoginScreen} 
+        options={{ 
+          tabBarButton: () => null,
+          tabBarItemStyle: { display: 'none' }, // 徹底移除佔位
+          tabBarStyle: { display: 'none' }      // 進入登入頁隱藏 Footer
+        }} 
+      />
+      <Tab.Screen 
+        name="Register" 
+        component={RegisterScreen} 
+        options={{ 
+          tabBarButton: () => null,
+          tabBarItemStyle: { display: 'none' },
+          tabBarStyle: { display: 'none' } 
         }} 
       />
     </Tab.Navigator>

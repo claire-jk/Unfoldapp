@@ -1,12 +1,28 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
 export default function BreathingScreen() {
-  const navigation = useNavigation();
+  const route = useRoute<any>();
+  const navigation = useNavigation<any>();
+  
+  // 取得從 Home 傳來的參數
+  const { redirectTo } = route.params || {};
+
+  const onBreathingComplete = () => {
+    // 練習結束時的邏輯
+    if (redirectTo === 'Login') {
+      // 1.5 秒後自動導向登入，給使用者一點緩衝時間
+      setTimeout(() => {
+        navigation.navigate('Login');
+      }, 1500);
+    } else {
+      navigation.goBack();
+    }
+  };
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current; // 用於美化後的完成畫面
   
@@ -101,7 +117,7 @@ export default function BreathingScreen() {
             
             <TouchableOpacity 
               style={styles.backButton} 
-              onPress={() => navigation.goBack()}
+              onPress={onBreathingComplete}
             >
               <Text style={styles.backButtonText}>回到首頁</Text>
             </TouchableOpacity>
