@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
   googleButtonText: { color: '#333', fontFamily: 'Zen', fontSize: 16, fontWeight: '600' },
   footerLinks: { flexDirection: 'row', justifyContent: 'center', marginTop: 30 },
   noAccount: { fontFamily: 'Zen', color: '#888' },
-  signUpText: { fontFamily: 'Zen', color: '#b561ffff', marginLeft: 5, fontWeight: 'bold' },
+  signUpText: { fontFamily: 'Zen', color: '#b561ffff', marginLeft: 5 },
 
   // --- Modal 美化樣式 ---
   modalOverlay: {
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontFamily: 'Zen',
     fontSize: 22,
-    fontWeight: 'bold',
+    //fontWeight: 'bold',
     color: '#333',
     marginBottom: 10,
   },
@@ -293,6 +293,6 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontFamily: 'Zen',
     fontSize: 16,
-    fontWeight: 'bold',
+    //fontWeight: 'bold',
   },
 });

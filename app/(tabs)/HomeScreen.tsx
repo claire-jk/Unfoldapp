@@ -1,55 +1,72 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient'; // 確保已安裝
-import React, { useState } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect, useState } from 'react';
 import { Dimensions, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import MoodCircle from './MoodCircle';
 
-const { width, height: SCREEN_HEIGHT } = Dimensions.get('window');
+// 匯入 Firebase 監控狀態
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./firebaseConfig";
+
+const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const [moodValue, setMoodValue] = useState(50);
-  const [modalVisible, setModalVisible] = useState(false); // 控制彈窗狀態
+  const [modalVisible, setModalVisible] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false); // 追蹤是否已提交
+  const [isLoggedIn, setIsLoggedIn] = useState(false);     // 追蹤登入狀態
   const navigation = useNavigation<any>();
 
+  // --- 1. 監聽登入狀態 ---
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsLoggedIn(true);
+        // 如果使用者本來開著彈窗去登入，回來後我們自動視為提交成功
+        if (modalVisible) {
+          setHasSubmitted(true);
+          setModalVisible(false);
+        }
+      } else {
+        setIsLoggedIn(false);
+      }
+    });
+    return unsubscribe;
+  }, [modalVisible]);
+
+  // --- 2. 取得心情對應資料 ---
   const getMoodData = () => {
-    if (moodValue < 25) return { color: '#FF6B6B', emoji: 'sad-outline', label: '有點難過' };
-    if (moodValue < 50) return { color: '#FFD93D', emoji: 'sunny-outline', label: '平靜的一天' };
-    if (moodValue < 75) return { color: '#6BCB77', emoji: 'happy-outline', label: '心情不錯' };
-    return { color: '#4D96FF', emoji: 'rocket-outline', label: '超級開心！' };
+    if (moodValue < 25) return { color: '#FF6B6B', emoji: 'sad-outline', label: '有點難過', feedback: '深呼吸... 沒關係的，每個人都有低潮的時候。這份情緒我幫你收好了，要不要去練習放鬆一下？' };
+    if (moodValue < 50) return { color: '#FFD93D', emoji: 'sunny-outline', label: '平靜的一天', feedback: '平靜也是一種幸福。在穩定的節奏中，感受當下的自己吧！' };
+    if (moodValue < 75) return { color: '#6BCB77', emoji: 'happy-outline', label: '心情不錯', feedback: '聽起來是不錯的一天！記得把這份小確幸存進心裡的存錢筒喔。' };
+    return { color: '#4D96FF', emoji: 'rocket-outline', label: '超級開心！', feedback: '太棒了！你的正能量閃閃發光，希望這份快樂能延續到明天！' };
   };
 
-  const { color, emoji, label } = getMoodData();
+  const { color, emoji, label, feedback } = getMoodData();
 
-  const handleLater = () => {
-    setModalVisible(false);
-    
-    if (moodValue < 25) {
-      // 傳送一個參數告訴呼吸頁面：結束後請跳轉到登入
-      navigation.navigate('Breathing', { redirectTo: 'Login' });
-    } else {
-      alert('感謝分享今日心情！');
-    }
-  };
-
-  // 修改提交邏輯：改為顯示彈窗
+  // --- 3. 提交邏輯 ---
   const handleSubmit = () => {
     if (moodValue < 25) {
-      // 情況 A：心情低落 -> 直接去呼吸練習，並傳入 redirectTo 參數
-      navigation.navigate('Breathing', { redirectTo: 'Login' });
+      // 情況 A：心情低落 -> 去呼吸練習
+      navigation.navigate('Breathing', { redirectTo: isLoggedIn ? 'Home' : 'Login' });
     } else {
-      // 情況 B：心情正常/開心 -> 留在原地顯示登入引導彈窗
-      setModalVisible(true);
+      if (!isLoggedIn) {
+        // 情況 B：沒登入 -> 顯示引導彈窗
+        setModalVisible(true);
+      } else {
+        // 情況 C：已登入 -> 直接顯示回饋
+        setHasSubmitted(true);
+      }
     }
   };
 
   const handleLoginPress = () => {
-    setModalVisible(false);
+    // 這裡不關閉 Modal，交由 useEffect 處理自動提交
     navigation.navigate('Login');
   };
 
   const handleRegisterPress = () => {
-    setModalVisible(false);
     navigation.navigate('Register');
   };
 
@@ -79,17 +96,28 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <TouchableOpacity 
-          style={[styles.submitButton, { backgroundColor: color }]}
-          onPress={handleSubmit}
-        >
-          <Text style={styles.submitText}>提交今日心情</Text>
-        </TouchableOpacity>
+        {/* --- 4. 動態顯示：按鈕 或 心理評語 --- */}
+        {!hasSubmitted ? (
+          <TouchableOpacity 
+            style={[styles.submitButton, { backgroundColor: color }]}
+            onPress={handleSubmit}
+          >
+            <Text style={styles.submitText}>提交今日心情</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={[styles.feedbackCard, { borderColor: color }]}>
+            <View style={styles.feedbackHeader}>
+              <Ionicons name="sparkles" size={20} color={color} />
+              <Text style={styles.feedbackTitle}>給你的小悄悄話</Text>
+            </View>
+            <Text style={styles.feedbackText}>{feedback}</Text>
+          </View>
+        )}
 
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* --- 新增的引導登入彈窗 --- */}
+      {/* --- 引導登入彈窗 --- */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -108,7 +136,7 @@ export default function HomeScreen() {
 
             <Text style={styles.modalTitle}>記錄您的情緒旅程</Text>
             <Text style={styles.modalSubtitle}>
-              登入您的帳號，即可保存每日的情緒記錄，追蹤您的心情變化。
+              登入您的帳號，即可保存剛剛選擇的心情 ({moodValue})，追蹤您的心情變化。
             </Text>
 
             <View style={styles.featureList}>
@@ -120,10 +148,6 @@ export default function HomeScreen() {
                 <View style={[styles.dot, { backgroundColor: '#b561ff' }]} />
                 <Text style={styles.featureText}>查看情緒趨勢圖表</Text>
               </View>
-              <View style={styles.featureItem}>
-                <View style={[styles.dot, { backgroundColor: '#4ade80' }]} />
-                <Text style={styles.featureText}>獲得個人化的心理建議</Text>
-              </View>
             </View>
 
             <TouchableOpacity onPress={handleLoginPress} activeOpacity={0.8}>
@@ -132,8 +156,8 @@ export default function HomeScreen() {
               </LinearGradient>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.laterBtn} onPress={() => setModalVisible(false)}>
-              <Text style={styles.laterBtnText}>稍後再說</Text>
+            <TouchableOpacity style={styles.laterBtn} onPress={() => {setModalVisible(false); setHasSubmitted(true);}}>
+              <Text style={styles.laterBtnText}>不登入，直接查看回饋</Text>
             </TouchableOpacity>
 
             <View style={styles.modalFooter}>
@@ -150,7 +174,6 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  // --- 原有樣式保持不變 ---
   container: { flex: 1, backgroundColor: '#FFF' },
   scrollContent: { paddingTop: 60, alignItems: 'center' },
   headerTitle: { fontFamily: 'Zen', color: '#b561ffff', fontSize: 24, textAlign: 'center', marginBottom: 20 },
@@ -165,12 +188,31 @@ const styles = StyleSheet.create({
   submitButton: { marginTop: 40, width: '80%', paddingVertical: 15, borderRadius: 30, alignItems: 'center', shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 5, elevation: 5 },
   submitText: { color: '#FFF', fontSize: 18, fontFamily: 'Zen' },
 
-  // --- 新增 Modal 專屬樣式 ---
+  // --- 新增：回饋卡片樣式 ---
+  feedbackCard: {
+    marginTop: 40,
+    width: '85%',
+    backgroundColor: '#FFF',
+    borderRadius: 25,
+    padding: 25,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  feedbackHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  feedbackTitle: { fontFamily: 'Zen', fontSize: 18, fontWeight: 'bold', color: '#333', marginLeft: 8 },
+  feedbackText: { fontFamily: 'Zen', fontSize: 15, color: '#555', textAlign: 'center', lineHeight: 24 },
+
+  // --- Modal 樣式 ---
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center' },
   modalContent: { width: width * 0.85, backgroundColor: 'white', borderRadius: 30, padding: 25, alignItems: 'center', elevation: 10 },
   closeIcon: { alignSelf: 'flex-end', padding: 5 },
   iconCircle: { width: 80, height: 80, borderRadius: 40, justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
-  modalTitle: { fontSize: 22, color: '#333', marginBottom: 10, fontFamily: 'Zen' },
+  modalTitle: { fontSize: 22, color: '#333', marginBottom: 10, fontFamily: 'Zen', textAlign: 'center' },
   modalSubtitle: { fontSize: 14, color: '#666', textAlign: 'center', lineHeight: 20, marginBottom: 25, fontFamily: 'Zen' },
   featureList: { width: '100%', marginBottom: 30 },
   featureItem: { flexDirection: 'row', alignItems: 'center', marginBottom: 12, paddingHorizontal: 10 },
@@ -178,8 +220,8 @@ const styles = StyleSheet.create({
   featureText: { fontSize: 15, color: '#444', fontFamily: 'Zen' },
   loginBtn: { width: width * 0.7, paddingVertical: 15, borderRadius: 30, alignItems: 'center', marginBottom: 10 },
   loginBtnText: { color: 'white', fontSize: 16, fontFamily: 'Zen' },
-  laterBtn: { width: width * 0.7, paddingVertical: 15, borderRadius: 30, borderWidth: 1, borderColor: '#EEE', alignItems: 'center', marginBottom: 20 },
-  laterBtnText: { color: '#888', fontFamily: 'Zen' },
+  laterBtn: { width: width * 0.7, paddingVertical: 12, borderRadius: 30, borderWidth: 1, borderColor: '#EEE', alignItems: 'center', marginBottom: 20 },
+  laterBtnText: { color: '#888', fontFamily: 'Zen', fontSize: 13 },
   modalFooter: { flexDirection: 'row' },
   footerText: { color: '#999', fontFamily: 'Zen' },
   registerLink: { color: '#6e8eff', fontFamily: 'Zen' },
