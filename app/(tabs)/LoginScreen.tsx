@@ -36,33 +36,43 @@ export default function LoginScreen() {
   const [showSuccessModal, setShowSuccessModal] = useState(false); // 控制成功彈窗
   const [isPasswordVisible, setIsPasswordVisible] = useState(false); // 密碼眼睛開關
 
+  //const redirectUri = AuthSession.makeRedirectUri({ useProxy: true });
   // Google 登入 Request
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId: '299653731568-allk6hi7f7vtpp07gn50hfd9g48j3fcp.apps.googleusercontent.com',
+const [request, response, promptAsync] =
+  Google.useIdTokenAuthRequest({
+    androidClientId: '646322965592-hao4qcln305v8a9d0n3c1m193vcl2oog.apps.googleusercontent.com',
+    iosClientId: '646322965592-mlecuedchtd0vvft4s6etbdv86k6mmhs.apps.googleusercontent.com',
+    webClientId: '646322965592-q8pglkavvij0ggvd4026rdrhhsjs5ere.apps.googleusercontent.com',
+    scopes: ['profile', 'email'],
   });
 
   // 監聽 Google 登入結果
-  useEffect(() => {
-    if (response?.type === 'success') {
-      const { id_token } = response.params ?? {};
-      if (!id_token) {
-        Alert.alert("Google 登入失敗", "未取得 id_token");
-        return;
-      }
-      const credential = GoogleAuthProvider.credential(id_token);
+useEffect(() => {
+  if (response?.type === 'success') {
+    const idToken = response.authentication?.idToken;
 
-      setIsLoading(true);
-      signInWithCredential(auth, credential)
-        .then(() => {
-          setIsLoading(false);
-          setShowSuccessModal(true); // 觸發成功彈窗
-        })
-        .catch((err) => {
-          setIsLoading(false);
-          Alert.alert("Google 登入失敗", err.message);
-        });
+    if (!idToken) {
+      Alert.alert("Google 登入失敗", "未取得 idToken");
+      return;
     }
-  }, [response]);
+
+    setIsLoading(true);
+
+    const credential = GoogleAuthProvider.credential(idToken);
+
+    signInWithCredential(auth, credential)
+      .then(() => {
+        setIsLoading(false);
+        setShowSuccessModal(true);
+      })
+      .catch((err) => {
+        setIsLoading(false);
+        Alert.alert("Firebase 驗證失敗", err.message);
+      });
+  }
+}, [response]);
+
+
 
   // 一般 Email 登入邏輯
   const handleLogin = async () => {
@@ -169,13 +179,14 @@ export default function LoginScreen() {
 
         {/* Google 登入 */}
         <TouchableOpacity
-          style={styles.googleButton}
-          disabled={!request}
-          onPress={() => promptAsync()}
+        style={styles.googleButton}
+        disabled={!request}
+        onPress={() => promptAsync()}
         >
-          <Ionicons name="logo-google" size={20} color="#3586eaff" style={{ marginRight: 10 }} />
-          <Text style={styles.googleButtonText}>使用 Google 帳號登入</Text>
+        <Ionicons name="logo-google" size={20} color="#3586eaff" style={{ marginRight: 10 }} />
+            <Text style={styles.googleButtonText}>使用 Google 帳號登入</Text>
         </TouchableOpacity>
+
 
         <View style={styles.footerLinks}>
           <Text style={styles.noAccount}>還沒有帳號？</Text>
@@ -183,6 +194,7 @@ export default function LoginScreen() {
             <Text style={styles.signUpText}>立即註冊</Text>
           </TouchableOpacity>
         </View>
+
       </View>
     </View>
   );
