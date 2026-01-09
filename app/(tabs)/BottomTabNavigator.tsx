@@ -2,12 +2,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import AIRelaxScreen from './AIRelaxScreen';
 import BreathingScreen from './BreathingScreen';
 import HomeScreen from './HomeScreen';
 import LoginScreen from './LoginScreen';
 import MapScreen from './MapScreen';
 import ProfileScreen from './ProfileScreen';
 import RegisterScreen from './RegisterScreen';
+import RelaxScreen from './RelaxScreen';
+import ShredderScreen from './ShredderScreen';
+import TapRelaxScreen from './TapRelaxScreen';
 
 const Placeholder = ({ name }: { name: string }) => (
   <View style={styles.screen}>
@@ -37,8 +41,8 @@ export default function BottomTabNavigator() {
           else if (route.name === 'Post') {
             iconName = focused ? 'add-circle' : 'add-circle-outline';
           } 
-          else if (route.name === 'Alert') {
-            iconName = focused ? 'notifications' : 'notifications-outline';
+          else if (route.name === 'Relax') {
+            iconName = focused ? 'leaf' : 'leaf-outline';
           } 
           else {
             iconName = focused ? 'person' : 'person-outline';
@@ -70,7 +74,7 @@ export default function BottomTabNavigator() {
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Map" component={MapScreen} />
       <Tab.Screen name="Post" component={() => <Placeholder name="Post" />} />
-      <Tab.Screen name="Alert" component={() => <Placeholder name="Alert" />} />
+      <Tab.Screen name="Relax" component={RelaxScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
 
       {/* 隱藏的呼吸頁面：徹底移除佔位 */}
@@ -101,6 +105,33 @@ export default function BottomTabNavigator() {
           tabBarStyle: { display: 'none' } 
         }} 
       />
+    <Tab.Screen 
+      name="TapRelax" 
+      component={TapRelaxScreen} 
+      options={{ 
+        tabBarButton: () => null, // 隱藏底部按鈕
+        tabBarItemStyle: { display: 'none' }, // 徹底移除佔位
+        tabBarStyle: { display: 'none' } // 進入此頁面時隱藏 Footer
+      }} 
+    />
+    <Tab.Screen 
+      name="AIRelax" 
+      component={AIRelaxScreen} 
+      options={{ 
+        tabBarButton: () => null,
+        tabBarItemStyle: { display: 'none' },
+        tabBarStyle: { display: 'none' } 
+      }} 
+    />
+    <Tab.Screen 
+      name="Shredder" 
+      component={ShredderScreen} 
+      options={{ 
+        tabBarButton: () => null,
+        tabBarItemStyle: { display: 'none' },
+        tabBarStyle: { display: 'none' } 
+      }} 
+    />
     </Tab.Navigator>
   );
 }
