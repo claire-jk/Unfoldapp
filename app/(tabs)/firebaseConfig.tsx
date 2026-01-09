@@ -1,6 +1,7 @@
 // 1. 修正匯入：必須包含 getAuth
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth"; // 這裡最重要，一定要匯入 auth 模組
+import { getFirestore } from 'firebase/firestore';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -18,6 +19,7 @@ const app = initializeApp(firebaseConfig);
 
 // 3. 正確導出 auth 供其他頁面使用
 export const auth = getAuth(app);
+export const db = getFirestore(app);
 
 export default function FirebaseConfig() { return null; }
 
