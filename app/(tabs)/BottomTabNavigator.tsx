@@ -5,6 +5,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import BreathingScreen from './BreathingScreen';
 import HomeScreen from './HomeScreen';
 import LoginScreen from './LoginScreen';
+import MapScreen from './MapScreen';
 import ProfileScreen from './ProfileScreen';
 import RegisterScreen from './RegisterScreen';
 
@@ -23,18 +24,29 @@ export default function BottomTabNavigator() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ color, size }) => {
+        tabBarIcon: ({ color, size, focused }) => {
           let iconName: any;
           // 這裡統一使用小寫名稱判斷，對應下方的 Tab.Screen name
-          if (route.name === 'Home') iconName = 'home';
-          else if (route.name === 'Search') iconName = 'search';
-          else if (route.name === 'Post') iconName = 'add-circle';
-          else if (route.name === 'Alert') iconName = 'notifications';
-          else iconName = 'person';
+          if (route.name === 'Home') {
+            iconName = focused ? 'home' : 'home-outline';
+          } 
+          // 2. 修正這裡的語法錯誤
+          else if (route.name === 'Map') {
+            iconName = focused ? 'map' : 'map-outline'; 
+          } 
+          else if (route.name === 'Post') {
+            iconName = focused ? 'add-circle' : 'add-circle-outline';
+          } 
+          else if (route.name === 'Alert') {
+            iconName = focused ? 'notifications' : 'notifications-outline';
+          } 
+          else {
+            iconName = focused ? 'person' : 'person-outline';
+          }
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#007AFF',
+        tabBarActiveTintColor: '#8000FF',
         tabBarInactiveTintColor: 'gray',
         tabBarLabelStyle: {
           fontFamily: 'Zen', 
@@ -56,7 +68,7 @@ export default function BottomTabNavigator() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Search" component={() => <Placeholder name="Search" />} />
+      <Tab.Screen name="Map" component={MapScreen} />
       <Tab.Screen name="Post" component={() => <Placeholder name="Post" />} />
       <Tab.Screen name="Alert" component={() => <Placeholder name="Alert" />} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
