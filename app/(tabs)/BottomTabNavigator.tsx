@@ -4,6 +4,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import AIRelaxScreen from './AIRelaxScreen';
 import BreathingScreen from './BreathingScreen';
+import ForestScreen from './ForestScreen';
 import HomeScreen from './HomeScreen';
 import LoginScreen from './LoginScreen';
 import MapScreen from './MapScreen';
@@ -11,6 +12,7 @@ import ProfileScreen from './ProfileScreen';
 import RegisterScreen from './RegisterScreen';
 import RelaxScreen from './RelaxScreen';
 import ShredderScreen from './ShredderScreen';
+import SkillTree from './SkillTreeScreen';
 import TapRelaxScreen from './TapRelaxScreen';
 
 const Placeholder = ({ name }: { name: string }) => (
@@ -38,11 +40,11 @@ export default function BottomTabNavigator() {
           else if (route.name === 'Map') {
             iconName = focused ? 'map' : 'map-outline'; 
           } 
-          else if (route.name === 'Post') {
-            iconName = focused ? 'add-circle' : 'add-circle-outline';
+          else if (route.name === 'Forest') {
+            iconName = focused ? 'leaf' : 'leaf-outline';
           } 
           else if (route.name === 'Relax') {
-            iconName = focused ? 'leaf' : 'leaf-outline';
+            iconName = focused ? 'rose' : 'rose-outline';
           } 
           else {
             iconName = focused ? 'person' : 'person-outline';
@@ -73,7 +75,7 @@ export default function BottomTabNavigator() {
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Map" component={MapScreen} />
-      <Tab.Screen name="Post" component={() => <Placeholder name="Post" />} />
+      <Tab.Screen name="Forest" component={ForestScreen} />
       <Tab.Screen name="Relax" component={RelaxScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
 
@@ -126,6 +128,15 @@ export default function BottomTabNavigator() {
     <Tab.Screen 
       name="Shredder" 
       component={ShredderScreen} 
+      options={{ 
+        tabBarButton: () => null,
+        tabBarItemStyle: { display: 'none' },
+        tabBarStyle: { display: 'none' } 
+      }} 
+    />
+    <Tab.Screen 
+      name="SkillTree" 
+      component={SkillTree} 
       options={{ 
         tabBarButton: () => null,
         tabBarItemStyle: { display: 'none' },

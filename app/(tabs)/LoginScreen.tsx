@@ -2,16 +2,28 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Dimensions,
-    Modal,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Modal,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
+/*const user = userCredential.user;
+const userRef = doc(db, "Users", user.uid);
+const userSnap = await getDoc(userRef);
+
+if (!userSnap.exists()) {
+  await setDoc(userRef, {
+    totalExp: 0,
+    level: 1,
+    treeStage: "萌芽期",
+    createdAt: serverTimestamp()
+  });
+}*/
 
 // --- 匯入 Firebase 與 Google Auth 套件 ---
 import * as Google from 'expo-auth-session/providers/google';

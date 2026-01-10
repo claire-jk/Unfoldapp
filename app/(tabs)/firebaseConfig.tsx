@@ -1,9 +1,8 @@
-// 1. 修正匯入：必須包含 getAuth
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth"; // 這裡最重要，一定要匯入 auth 模組
+import { getAuth } from "firebase/auth";
 import { getFirestore } from 'firebase/firestore';
 
-// Your web app's Firebase configuration
+// 1. 你的 Firebase 配置
 const firebaseConfig = {
   apiKey: "AIzaSyB0bY26hq-zioV2-Nc27uzXVd3EJWmnFyw",
   authDomain: "unfoldprofile.firebaseapp.com",
@@ -14,14 +13,12 @@ const firebaseConfig = {
   measurementId: "G-9YYSLJNZVS"
 };
 
-// 2. 初始化 Firebase
+// 2. 初始化 Firebase 實例
 const app = initializeApp(firebaseConfig);
 
-// 3. 正確導出 auth 供其他頁面使用
+// 3. 匯出給其他頁面使用的實例 (注意：不要在這裡 import 自己)
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-export default function FirebaseConfig() { return null; }
-
-// 建議：暫時移除 Analytics，除非你在開發 Web 版，否則 Expo Go 可能會報錯
-// const analytics = getAnalytics(app);
+// 預設匯出 (選用)
+export default app;
