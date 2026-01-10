@@ -15,6 +15,7 @@ import RelaxScreen from './RelaxScreen';
 import ShredderScreen from './ShredderScreen';
 import SkillTree from './SkillTreeScreen';
 import TapRelaxScreen from './TapRelaxScreen';
+import TimeCapsuleScreen from './TimeCapsuleScreen';
 
 const Placeholder = ({ name }: { name: string }) => (
   <View style={styles.screen}>
@@ -147,6 +148,15 @@ export default function BottomTabNavigator() {
     <Tab.Screen 
       name="EmotionTree" 
       component={EmotionTree} 
+      options={{ 
+        tabBarButton: () => null,
+        tabBarItemStyle: { display: 'none' },
+        tabBarStyle: { display: 'none' } 
+      }} 
+    />
+    <Tab.Screen 
+      name="TimeCapsule" 
+      component={TimeCapsuleScreen} 
       options={{ 
         tabBarButton: () => null,
         tabBarItemStyle: { display: 'none' },
