@@ -4,6 +4,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import AIRelaxScreen from './AIRelaxScreen';
 import BreathingScreen from './BreathingScreen';
+import EmotionTree from './EmotionTreeScreen';
 import ForestScreen from './ForestScreen';
 import HomeScreen from './HomeScreen';
 import LoginScreen from './LoginScreen';
@@ -137,6 +138,15 @@ export default function BottomTabNavigator() {
     <Tab.Screen 
       name="SkillTree" 
       component={SkillTree} 
+      options={{ 
+        tabBarButton: () => null,
+        tabBarItemStyle: { display: 'none' },
+        tabBarStyle: { display: 'none' } 
+      }} 
+    />
+    <Tab.Screen 
+      name="EmotionTree" 
+      component={EmotionTree} 
       options={{ 
         tabBarButton: () => null,
         tabBarItemStyle: { display: 'none' },
