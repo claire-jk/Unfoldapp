@@ -56,7 +56,7 @@ const SuccessModal = ({ visible, message, onClose }: { visible: boolean, message
                     <Ionicons name="checkmark-sharp" size={40} color="#fff" />
                 </View>
                 <Text style={[styles.modalHeaderTitle, { marginBottom: 10 }]}>達成成功！</Text>
-                <Text style={{ color: '#64748B', fontSize: 16, textAlign: 'center', marginBottom: 25 }}>{message}</Text>
+                <Text style={{ color: '#64748B', fontSize: 16, textAlign: 'center', marginBottom: 25,fontFamily:'Zen' }}>{message}</Text>
                 <TouchableOpacity 
                     style={[styles.confirmBtn, { width: 120, borderRadius: 20 }]} // 成功視窗按鈕稍微長一點好按
                     onPress={onClose}
@@ -126,35 +126,37 @@ const SkillTreeScreen = () => {
     };
 
     // --- 初始化與監聽 ---
-    useEffect(() => {
-        const user = auth.currentUser;
-        if (!user) { setLoading(false); return; }
+  useEffect(() => {
+    const user = auth.currentUser;
+    if (!user) { setLoading(false); return; }
 
-        // 確保 User 文件存在並監聽
-        const initUser = async () => {
-            const userRef = doc(db, "Users", user.uid);
-            const userSnap = await getDoc(userRef);
-            if (!userSnap.exists()) {
-                await setDoc(userRef, { totalExp: 0, level: 1, treeStage: "萌芽期", createdAt: serverTimestamp() });
-            }
-        };
-        initUser();
+    const initUser = async () => {
+        // 修正處：Users -> users
+        const userRef = doc(db, "users", user.uid); 
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists()) {
+            await setDoc(userRef, { totalExp: 0, level: 1, treeStage: "萌芽期", createdAt: serverTimestamp() });
+        }
+    };
+    initUser();
 
-        const unsubscribeUser = onSnapshot(doc(db, "Users", user.uid), (snapshot) => {
-            if (snapshot.exists()) {
-                setUserData(snapshot.data() as UserData);
-            }
-            setLoading(false);
-        });
+    // 修正處：Users -> users
+    const unsubscribeUser = onSnapshot(doc(db, "users", user.uid), (snapshot) => {
+        if (snapshot.exists()) {
+            setUserData(snapshot.data() as UserData);
+        }
+        setLoading(false);
+    });
 
-        const q = query(collection(db, "Users", user.uid, "Tasks"), orderBy("time", "asc"));
-        const unsubscribeTasks = onSnapshot(q, (snapshot) => {
-            const taskList = snapshot.docs.map(d => ({ id: d.id, ...(d.data() as Omit<Task, 'id'>) })) as Task[];
-            setTasks(taskList);
-        });
+    // 修正處：Users -> users
+    const q = query(collection(db, "users", user.uid, "Tasks"), orderBy("time", "asc"));
+    const unsubscribeTasks = onSnapshot(q, (snapshot) => {
+        const taskList = snapshot.docs.map(d => ({ id: d.id, ...(d.data() as Omit<Task, 'id'>) })) as Task[];
+        setTasks(taskList);
+    });
 
-        return () => { unsubscribeUser(); unsubscribeTasks(); };
-    }, []);
+    return () => { unsubscribeUser(); unsubscribeTasks(); };
+  }, []);
 
     // --- 功能函式 ---
     const formatTime = (date: Date) => {
@@ -174,7 +176,7 @@ const SkillTreeScreen = () => {
         if (!user) return;
         try {
             const timeString = formatTime(selectedTime);
-            await addDoc(collection(db, "Users", user.uid, "Tasks"), {
+            await addDoc(collection(db, "users", user.uid, "Tasks"), {
                 title: newTaskTitle,
                 time: timeString,
                 completed: false,
@@ -190,8 +192,8 @@ const SkillTreeScreen = () => {
         const user = auth.currentUser;
         if (!user || currentStatus) return;
         try {
-            const userRef = doc(db, "Users", user.uid);
-            await updateDoc(doc(db, "Users", user.uid, "Tasks", taskId), { completed: true });
+            const userRef = doc(db, "users", user.uid);
+            await updateDoc(doc(db, "users", user.uid, "Tasks", taskId), { completed: true });
             await updateExpAndCheckLevelUp(userRef, userData.totalExp, 10);
             showSuccess("任務達成！\n經驗值 +10");
         } catch (e) { console.error(e); }
@@ -202,8 +204,8 @@ const SkillTreeScreen = () => {
         const user = auth.currentUser;
         if (!user) return;
         try {
-            const userRef = doc(db, "Users", user.uid);
-            await addDoc(collection(db, "Users", user.uid, "Records"), {
+            const userRef = doc(db, "users", user.uid);
+            await addDoc(collection(db, "users", user.uid, "Records"), {
                 type: "rain", content: rainContent, timestamp: serverTimestamp()
             });
             await updateExpAndCheckLevelUp(userRef, userData.totalExp, 20);
@@ -218,8 +220,8 @@ const SkillTreeScreen = () => {
         const user = auth.currentUser;
         if (!user) return;
         try {
-            const userRef = doc(db, "Users", user.uid);
-            await addDoc(collection(db, "Users", user.uid, "Records"), {
+            const userRef = doc(db, "users", user.uid);
+            await addDoc(collection(db, "users", user.uid, "Tasks"), {
                 type: "fruit", title: skillName, description: skillDesc, timestamp: serverTimestamp()
             });
             await updateExpAndCheckLevelUp(userRef, userData.totalExp, 50);
@@ -239,7 +241,7 @@ const SkillTreeScreen = () => {
             <StatusBar barStyle="dark-content" />
             
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
+                <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Forest' as never)}>
                     <Ionicons name="chevron-back" size={26} color="#334155" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>成長技能樹</Text>
@@ -408,7 +410,7 @@ const SkillTreeScreen = () => {
                             </TouchableOpacity>
                             
                             <TouchableOpacity onPress={() => setRainModalVisible(false)} style={styles.closeBtn}>
-                                <Text style={{color: '#94A3B8', fontWeight: '600'}}>暫時取消</Text>
+                                <Text style={{color: '#94A3B8', fontFamily: 'Zen'}}>暫時取消</Text>
                             </TouchableOpacity>
                         </ScrollView>
                     </View>
@@ -435,7 +437,7 @@ const SkillTreeScreen = () => {
                             </TouchableOpacity>
 
                             <TouchableOpacity onPress={() => setFruitModalVisible(false)} style={styles.closeBtn}>
-                                <Text style={{color: '#94A3B8', fontWeight: '600'}}>下次再收</Text>
+                                <Text style={{color: '#94A3B8', fontFamily: 'Zen'}}>下次再收</Text>
                             </TouchableOpacity>
                         </ScrollView>
                     </View>
@@ -455,6 +457,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20, paddingTop: 60, paddingBottom: 20, backgroundColor: '#fff',
         borderBottomLeftRadius: 30, borderBottomRightRadius: 30, elevation: 2
     },
+    backButton: { width: 40, height: 40, justifyContent: 'center' },
     headerTitle: { fontSize: 20, color: '#1E293B' ,fontFamily: 'Zen'},
     iconBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
     container: { flex: 1, padding: 20 },
@@ -505,8 +508,8 @@ const styles = StyleSheet.create({
     actionRow: { flexDirection: 'row', justifyContent: 'space-between' },
     actionBtn: { width: '48%', borderRadius: 24, padding: 20, alignItems: 'center', elevation: 2 },
     iconCircle: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
-    actionBtnTitle: { fontSize: 16, fontWeight: '800', color: '#1E293B' },
-    actionBtnSub: { fontSize: 12, color: '#64748B', fontWeight: '700' },
+    actionBtnTitle: { fontSize: 16, fontFamily: 'Zen', color: '#1E293B' },
+    actionBtnSub: { fontSize: 12, color: '#64748B', fontFamily: 'Zen' },
 
     modalOverlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.6)', justifyContent: 'center', padding: 20 },
     modalContent: { 
@@ -517,8 +520,8 @@ const styles = StyleSheet.create({
     },
     modalHeaderTitle: { fontSize: 22, fontFamily: 'Zen', color: '#1E293B', marginBottom: 20, textAlign: 'center' },
     inputLabel: { fontSize: 14, fontFamily: 'Zen', color: '#64748B', marginBottom: 8 },
-    styledInput: { width: '100%', backgroundColor: '#F1F5F9', padding: 15, borderRadius: 15, marginBottom: 20 },
-    styledTextArea: { width: '100%', backgroundColor: '#F1F5F9', padding: 15, borderRadius: 15, height: 100, marginBottom: 20, textAlignVertical: 'top' },
+    styledInput: { width: '100%', backgroundColor: '#F1F5F9', padding: 15, borderRadius: 15, marginBottom: 20,fontFamily: 'Zen' },
+    styledTextArea: { width: '100%', backgroundColor: '#F1F5F9', padding: 15, borderRadius: 15, height: 100, marginBottom: 20, textAlignVertical: 'top', fontFamily: 'Zen' },
     modalBtnRow: { flexDirection: 'row', width: '100%', justifyContent: 'space-around', alignItems: 'center', marginTop: 10 },
     
     // 圓形取消鍵

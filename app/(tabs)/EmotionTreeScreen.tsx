@@ -132,8 +132,8 @@ const EmotionTreeScreen = () => {
             
             {/* Header */}
             <View style={styles.headerContainer}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backCircle}>
-                    <Ionicons name="chevron-back" size={24} color="#1E293B" />
+                <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Forest' as never)}>
+                    <Ionicons name="chevron-back" size={26} color="#334155" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>成長情緒樹</Text>
                 <View style={{ width: 40 }} />
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     },
     backCircle: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center' },
     headerTitle: { fontSize: 18, fontFamily: 'Zen', color: '#1E293B', letterSpacing: 1 },
-    
+    backButton: { width: 40, height: 40, justifyContent: 'center' },
     emotionMainCard: { backgroundColor: '#fff', borderRadius: 32, padding: 24, elevation: 4, shadowColor: '#64748B', shadowOpacity: 0.1, shadowRadius: 10 },
     progressContainer: { marginBottom: 20 },
     progressTextRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8},
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
     moodItem: { width: '31%', paddingVertical: 15, borderRadius: 20, alignItems: 'center', marginBottom: 10 },
     moodSelected: { borderWidth: 2, borderColor: '#A78BFA' },
     moodText: { marginTop: 6, fontSize: 12, color: '#334155', fontFamily: 'Zen' },
-    textInput: { backgroundColor: '#F8FAFC', borderRadius: 20, padding: 18, height: 100, textAlignVertical: 'top', fontSize: 14 },
+    textInput: { backgroundColor: '#F8FAFC', borderRadius: 20, padding: 18, height: 100, textAlignVertical: 'top', fontSize: 14 ,fontFamily: 'Zen'  },
     submitBtn: { backgroundColor: '#8B5CF6', borderRadius: 20, padding: 18, alignItems: 'center', marginTop: 30, marginBottom: 20 },
     submitBtnText: { color: '#fff', fontSize: 17, fontFamily: 'Zen'  },
 
@@ -343,10 +343,10 @@ const styles = StyleSheet.create({
     successOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center' },
     successBox: { width: '85%', backgroundColor: '#fff', borderRadius: 40, padding: 30, alignItems: 'center' },
     successIconBg: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#ECFDF5', justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
-    successTitle: { fontSize: 24, fontWeight: '800', color: '#065F46', marginBottom: 10 },
-    successSub: { fontSize: 15, color: '#64748B', textAlign: 'center', lineHeight: 22, marginBottom: 25 },
+    successTitle: { fontSize: 24, fontFamily: 'Zen', color: '#065F46', marginBottom: 10 },
+    successSub: { fontSize: 15, color: '#64748B', textAlign: 'center', lineHeight: 22, marginBottom: 25, fontFamily: 'Zen'  },
     successConfirmBtn: { backgroundColor: '#10B981', paddingHorizontal: 40, paddingVertical: 15, borderRadius: 25 },
-    successConfirmText: { color: '#fff', fontWeight: '700', fontSize: 16 }
+    successConfirmText: { color: '#fff', fontFamily: 'Zen', fontSize: 16 }
 });
 
 export default EmotionTreeScreen;

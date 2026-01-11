@@ -1,4 +1,4 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useRef, useState } from 'react';
@@ -52,10 +52,9 @@ export default function TapRelaxScreen({ navigation }: any) {
     <LinearGradient colors={['#F5F7FF', '#FFF5F9']} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         {/* 返回按鈕 */}
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Relax')}>
-          <MaterialCommunityIcons name="chevron-left" size={32} color="#6A5AE0" />
-        </TouchableOpacity>
-
+          <TouchableOpacity onPress={() => navigation.navigate('Relax')} style={styles.backButton}>
+            <Ionicons name="chevron-back" size={30} color="#6A5AE0" />
+          </TouchableOpacity>
         <View style={styles.content}>
           <Text style={[styles.title, { fontFamily: 'Caveat' }]}>Stress Relief </Text>
           <Text style={[styles.subtitle, { fontFamily: 'Zen' }]}>敲擊螢幕，排解煩惱</Text>
@@ -100,7 +99,7 @@ export default function TapRelaxScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
-  backButton: { padding: 16 },
+  backButton: { padding: 15, marginTop: 20 },
   content: { flex: 1, alignItems: 'center', justifyContent: 'space-around', paddingBottom: 50 },
   title: { fontSize: 28, color: '#6A5AE0' },
   subtitle: { fontSize: 16, color: '#888', marginTop: 8, fontFamily: 'Zen' },
