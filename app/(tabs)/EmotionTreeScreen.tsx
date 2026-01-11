@@ -26,14 +26,15 @@ const EmotionTreeScreen = () => {
     const user = auth.currentUser;
 
     // --- 狀態控制 ---
-    const [purifyPercent, setPurifyPercent] = useState(0); // 初始從 0 開始
+    const [purifyPercent, setPurifyPercent] = useState(0); 
+    const [treeLevel, setTreeLevel] = useState(1); // 新增：追蹤成長階段
     const [recordCount, setRecordCount] = useState(0);
     const [totalHours, setTotalHours] = useState(0);
     const [emotionScore, setEmotionScore] = useState(50);
-    const [lastNegative, setLastNegative] = useState(''); // 存儲最近的負面比較內容
+    const [lastNegative, setLastNegative] = useState(''); 
     
     const [isModalVisible, setModalVisible] = useState(false);
-    const [isSuccessVisible, setSuccessVisible] = useState(false); // 成功彈窗
+    const [isSuccessVisible, setSuccessVisible] = useState(false); 
     
     // --- 紀錄輸入表單狀態 ---
     const [hours, setHours] = useState(1);
@@ -52,6 +53,7 @@ const EmotionTreeScreen = () => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 setPurifyPercent(data.purifyPercent || 0);
+                setTreeLevel(data.treeLevel || 1); // 讀取等級
                 setRecordCount(data.recordCount || 0);
                 setTotalHours(data.totalHours || 0);
                 setEmotionScore(data.emotionScore || 50);
@@ -70,14 +72,22 @@ const EmotionTreeScreen = () => {
             const today = new Date().toISOString().split('T')[0];
             const historyRef = doc(db, "users", user!.uid, "logs", today);
 
-            const newPurify = Math.min(purifyPercent + 10, 100);
+            // --- 計算新進度與等級 ---
+            let newPercent = purifyPercent + 10;
+            let newLevel = treeLevel;
+
+            if (newPercent >= 100) {
+                newPercent = 0; // 進階後進度重置
+                newLevel += 1;  // 等級提升
+            }
 
             // 更新 Firebase
             await setDoc(statsRef, {
-                purifyPercent: newPurify,
+                purifyPercent: newPercent,
+                treeLevel: newLevel,
                 recordCount: increment(1),
                 totalHours: increment(hours),
-                lastNegative: negativeCompare, // 儲存最後一次的文字以便顯示在過濾器
+                lastNegative: negativeCompare,
                 lastUpdated: new Date()
             }, { merge: true });
 
@@ -90,15 +100,16 @@ const EmotionTreeScreen = () => {
             }, { merge: true });
 
             // 更新本地狀態
-            setPurifyPercent(newPurify);
+            setPurifyPercent(newPercent);
+            setTreeLevel(newLevel);
             setRecordCount(prev => prev + 1);
             setTotalHours(prev => prev + hours);
             setLastNegative(negativeCompare);
             
             setModalVisible(false);
-            setSuccessVisible(true); // 顯示美化後的成功彈窗
+            setSuccessVisible(true); 
 
-            // 重置
+            // 重置表單
             setNegativeCompare('');
             setPositiveInspire('');
             setSelectedMood('');
@@ -107,11 +118,21 @@ const EmotionTreeScreen = () => {
         }
     };
 
-    // --- 動態計算花朵成長 ---
+    // --- 動態計算花朵成長 (根據 Level 與 Percent 綜合演變) ---
     const getTreeStage = () => {
-        if (purifyPercent < 30) return { name: 'seed', size: 60, color: '#94A3B8', label: '種子萌芽中' };
-        if (purifyPercent < 70) return { name: 'sprout', size: 85, color: '#4ADE80', label: '茁壯成長中' };
-        return { name: 'flower-tulip', size: 110, color: '#FB7185', label: '盛開綻放中' };
+        // 根據 Level 決定基礎型態
+        if (treeLevel === 1) {
+            return { name: 'seed', size: 60 + (purifyPercent * 0.2), color: '#94A3B8', label: '心靈種子期' };
+        } else if (treeLevel === 2) {
+            return { name: 'sprout', size: 80 + (purifyPercent * 0.2), color: '#4ADE80', label: '茁壯萌芽期' };
+        } else if (treeLevel === 3) {
+            return { name: 'flower-tulip', size: 100 + (purifyPercent * 0.2), color: '#FB7185', label: '含苞待放期' };
+        } else if (treeLevel === 4) {
+            return { name: 'flower', size: 120 + (purifyPercent * 0.2), color: '#F472B6', label: '絢爛綻放期' };
+        } else {
+            // Level 5 以上變為守護星或高級花卉
+            return { name: 'star-face', size: 130, color: '#8B5CF6', label: `永恆守護者 Lv.${treeLevel}` };
+        }
     };
 
     const tree = getTreeStage();
@@ -130,7 +151,6 @@ const EmotionTreeScreen = () => {
         <View style={styles.safeArea}>
             <StatusBar barStyle="dark-content" />
             
-            {/* Header */}
             <View style={styles.headerContainer}>
                 <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Forest' as never)}>
                     <Ionicons name="chevron-back" size={26} color="#334155" />
@@ -141,11 +161,10 @@ const EmotionTreeScreen = () => {
 
             <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
                 
-                {/* 1. 情緒樹主卡片 */}
                 <View style={styles.emotionMainCard}>
                     <View style={styles.progressContainer}>
                         <View style={styles.progressTextRow}>
-                            <Text style={styles.progressLabel}>心靈淨化進度</Text>
+                            <Text style={styles.progressLabel}>成長階段：Level {treeLevel}</Text>
                             <Text style={styles.progressValue}>{purifyPercent}%</Text>
                         </View>
                         <View style={styles.progressBarBg}>
@@ -167,7 +186,6 @@ const EmotionTreeScreen = () => {
                     </View>
                 </View>
 
-                {/* 2. 社群過濾器 (轉念回饋) */}
                 {lastNegative !== '' && (
                     <View style={styles.filterCard}>
                         <View style={styles.filterHeader}>
@@ -182,19 +200,16 @@ const EmotionTreeScreen = () => {
                     </View>
                 )}
 
-                {/* 3. 按鈕區 */}
                 <TouchableOpacity style={styles.mainActionBtn} onPress={() => setModalVisible(true)}>
                     <Ionicons name="add-circle" size={24} color="#fff" />
                     <Text style={styles.mainActionBtnText}>記錄今日社群使用</Text>
                 </TouchableOpacity>
 
-                {/* --- 舒壓專區入口 (新增回來) --- */}
                 <TouchableOpacity 
                     style={styles.relaxEntryCard} 
                     onPress={() => navigation.navigate('Relax' as never)}
                 >
                     <View style={styles.relaxIconCircle}>
-                        {/* 這裡已將 leaf 改為 rose，顏色改為玫瑰粉紅 */}
                         <MaterialCommunityIcons name="flower-outline" size={26} color="#8000FF" />
                     </View>
                     <View style={{flex: 1, marginLeft: 15}}>
@@ -207,7 +222,6 @@ const EmotionTreeScreen = () => {
                 <View style={{ height: 100 }} />
             </ScrollView>
 
-            {/* --- 輸入紀錄 Modal --- */}
             <Modal visible={isModalVisible} animationType="slide" transparent={true}>
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
@@ -256,15 +270,18 @@ const EmotionTreeScreen = () => {
                 </View>
             </Modal>
 
-            {/* --- 成功美化 Modal --- */}
             <Modal visible={isSuccessVisible} transparent={true} animationType="fade">
                 <View style={styles.successOverlay}>
                     <View style={styles.successBox}>
                         <View style={styles.successIconBg}>
-                            <Ionicons name="checkmark-circle" size={60} color="#10B981" />
+                            <Ionicons name={purifyPercent === 0 ? "ribbon" : "checkmark-circle"} size={60} color="#10B981" />
                         </View>
-                        <Text style={styles.successTitle}>紀錄成功！</Text>
-                        <Text style={styles.successSub}>你的情緒樹又長大了一點，心靈清晰度 +10%</Text>
+                        <Text style={styles.successTitle}>{purifyPercent === 0 ? "進化成功！" : "紀錄成功！"}</Text>
+                        <Text style={styles.successSub}>
+                            {purifyPercent === 0 
+                                ? `太棒了！你的情緒樹已正式進入 Level ${treeLevel}！` 
+                                : "你的情緒樹又長大了一點，心靈清晰度 +10%"}
+                        </Text>
                         <TouchableOpacity style={styles.successConfirmBtn} onPress={() => setSuccessVisible(false)}>
                             <Text style={styles.successConfirmText}>太棒了</Text>
                         </TouchableOpacity>
@@ -275,6 +292,7 @@ const EmotionTreeScreen = () => {
     );
 };
 
+// ... 此處保持您原本的 styles 定義完全不變 ...
 const styles = StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: '#F1F5F9' },
     container: { flex: 1, padding: 20 },
@@ -313,7 +331,6 @@ const styles = StyleSheet.create({
     mainActionBtn: { backgroundColor: '#1E293B', borderRadius: 20, padding: 18, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 24, elevation: 4 },
     mainActionBtnText: { color: '#fff', fontSize: 16, fontFamily: 'Zen' , marginLeft: 10 },
 
-    // 舒壓專區入口樣式
     relaxEntryCard: { 
         backgroundColor: '#fff', borderRadius: 24, padding: 16, marginTop: 16, 
         flexDirection: 'row', alignItems: 'center', elevation: 2,
@@ -323,7 +340,6 @@ const styles = StyleSheet.create({
     relaxEntryTitle: { fontSize: 16, fontFamily: 'Zen' , color: '#334155' },
     relaxEntrySub: { fontSize: 12, color: '#64748B', marginTop: 2, fontFamily: 'Zen'  },
 
-    // Modal
     modalOverlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.6)', justifyContent: 'flex-end' },
     modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 40, borderTopRightRadius: 40, padding: 28, height: '88%' },
     modalIndicator: { width: 40, height: 5, backgroundColor: '#E2E8F0', borderRadius: 3, alignSelf: 'center', marginBottom: 15 },
@@ -339,7 +355,6 @@ const styles = StyleSheet.create({
     submitBtn: { backgroundColor: '#8B5CF6', borderRadius: 20, padding: 18, alignItems: 'center', marginTop: 30, marginBottom: 20 },
     submitBtnText: { color: '#fff', fontSize: 17, fontFamily: 'Zen'  },
 
-    // Success Modal
     successOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center' },
     successBox: { width: '85%', backgroundColor: '#fff', borderRadius: 40, padding: 30, alignItems: 'center' },
     successIconBg: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#ECFDF5', justifyContent: 'center', alignItems: 'center', marginBottom: 20 },

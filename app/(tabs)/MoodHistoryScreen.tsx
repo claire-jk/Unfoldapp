@@ -13,47 +13,45 @@ export default function MoodHistoryScreen() {
   const [loading, setLoading] = useState(true);
 
   // --- 2. 監聽 Firestore 數據 ---
-  useEffect(() => {
-    const user = auth.currentUser;
-    if (!user) {
-      setLoading(false);
-      return;
-    }
+useEffect(() => {
+  const user = auth.currentUser;
+  if (!user) {
+    setHistory([]); // 登出後清空畫面
+    setLoading(false);
+    return;
+  }
 
-    // 建立查詢：對應 userId 並按時間排序
-    // 注意：如果您的 Firestore 欄位名稱不同（例如 createdAt），請自行修改
-    const q = query(
-      collection(db, "moods"),
-      where("userId", "==", user.uid),
-      orderBy("timestamp", "desc") 
-    );
+  const q = query(
+    collection(db, "moods"),
+    where("userId", "==", user.uid),
+    orderBy("timestamp", "desc")
+  );
 
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const moodData: any[] = [];
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        // 格式化日期顯示 (假設您存的是 Firestore Timestamp)
-        const dateString = data.timestamp?.toDate ? 
-          data.timestamp.toDate().toLocaleDateString() : "未知日期";
-
-        moodData.push({
+  const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const moodData: any[] = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      moodData.push({
         id: doc.id,
         date: data.timestamp?.toDate ? data.timestamp.toDate().toLocaleDateString() : "讀取中...",
         score: data.score,
         label: data.label,
         color: data.color,
         emoji: data.emoji,
-        });
       });
-      setHistory(moodData);
-      setLoading(false);
-    }, (error) => {
-      console.log("🔥 Firestore 報錯詳情:", error.code, error.message);
-      setLoading(false);
     });
+    setHistory(moodData);
+    setLoading(false);
+  }, (error) => {
+    // 這裡處理登出時的權限報錯，避免閃退
+    if (error.code !== 'permission-denied') {
+      console.error("讀取歷史記錄失敗:", error);
+    }
+    setLoading(false);
+  });
 
-    return () => unsubscribe();
-  }, []);
+  return () => unsubscribe(); // 這裡非常關鍵：確保切換帳號或登出時，舊的監聽被殺掉
+}, [auth.currentUser]); // 這裡加入 auth.currentUser 作為依賴項
 
   const renderItem = ({ item }: any) => (
     <View style={styles.historyCard}>
