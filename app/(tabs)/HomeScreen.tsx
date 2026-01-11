@@ -7,7 +7,8 @@ import MoodCircle from './MoodCircle';
 
 // 匯入 Firebase 監控狀態
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "./firebaseConfig";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { auth, db } from "./firebaseConfig";
 
 const { width } = Dimensions.get('window');
 
@@ -20,11 +21,12 @@ export default function HomeScreen() {
 
   // --- 1. 監聽登入狀態 ---
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async(user) => {
       if (user) {
         setIsLoggedIn(true);
         // 如果使用者本來開著彈窗去登入，回來後我們自動視為提交成功
         if (modalVisible) {
+          await saveMoodToFirebase();
           setHasSubmitted(true);
           setModalVisible(false);
         }
@@ -46,7 +48,7 @@ export default function HomeScreen() {
   const { color, emoji, label, feedback } = getMoodData();
 
   // --- 3. 提交邏輯 ---
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (moodValue < 25) {
       // 情況 A：心情低落 -> 去呼吸練習
       navigation.navigate('Breathing', { redirectTo: isLoggedIn ? 'Home' : 'Login' });
@@ -56,6 +58,7 @@ export default function HomeScreen() {
         setModalVisible(true);
       } else {
         // 情況 C：已登入 -> 直接顯示回饋
+        await saveMoodToFirebase();
         setHasSubmitted(true);
       }
     }
@@ -69,6 +72,24 @@ export default function HomeScreen() {
   const handleRegisterPress = () => {
     navigation.navigate('Register');
   };
+  const saveMoodToFirebase = async () => {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  try {
+    await addDoc(collection(db, "moods"), {
+      userId: user.uid,          // 必備：用來篩選紀錄
+      score: moodValue,          // 心情數值
+      label: label,              // 例如 "有點難過"
+      emoji: emoji,              // 例如 "sad-outline"
+      color: color,              // 例如 "#FF6B6B"
+      timestamp: serverTimestamp() // 必備：用來排序
+    });
+    console.log("心情已成功記錄！");
+  } catch (e) {
+    console.error("存檔失敗: ", e);
+  }
+};
 
   return (
     <View style={{ flex: 1 }}>

@@ -10,6 +10,7 @@ import ForestScreen from './ForestScreen';
 import HomeScreen from './HomeScreen';
 import LoginScreen from './LoginScreen';
 import MapScreen from './MapScreen';
+import MoodHistoryScreen from './MoodHistoryScreen';
 import ProfileScreen from './ProfileScreen';
 import RegisterScreen from './RegisterScreen';
 import RelaxScreen from './RelaxScreen';
@@ -165,7 +166,17 @@ export default function BottomTabNavigator() {
         tabBarStyle: { display: 'none' } 
       }} 
     />
+    <Tab.Screen 
+      name="MoodHistory" 
+      component={MoodHistoryScreen} 
+      options={{ 
+        tabBarButton: () => null,
+        tabBarItemStyle: { display: 'none' },
+        tabBarStyle: { display: 'none' } 
+      }} 
+    />
     </Tab.Navigator>
+
   );
 }
 

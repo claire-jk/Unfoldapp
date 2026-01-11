@@ -100,7 +100,7 @@ export default function ProfileScreen({ navigation }: any) {
 
       {/* 功能選單 */}
       <View style={styles.menuSection}>
-        <MenuItem icon="time-outline" text="心情歷史記錄" onPress={() => {}} />
+        <MenuItem icon="time-outline" text="心情歷史記錄" onPress={() => navigation.navigate('MoodHistory')} />
         <MenuItem icon="analytics-outline" text="數據分析報告" onPress={() => {}} />
         <MenuItem icon="settings-outline" text="設定" onPress={() => {}} />
         
